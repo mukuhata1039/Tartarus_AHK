@@ -115,6 +115,11 @@ def test_ahk_guards():
         "mouse output refcount": "global MouseOutputCounts := Map()" in src,
         "analog remap recovery": "CloseAnalogMapping()" in src and "AnalogMapOpenedTick" in src,
         "hot-path logging disabled by default": "ENABLE_VERBOSE_LOGGING.txt" in src,
+        "SOCD last-input-wins core": "SocdDirectionDown(token, key)" in src and "SocdReconcilePair(key)" in src,
+        "SOCD limited to WASD cluster": '"08", "w"' in src and '"12", "a"' in src and '"13", "s"' in src and '"14", "d"' in src,
+        "SOCD analog token transfer": "SocdHeldTokens[newToken]" in src,
+        "SOCD winner keeps typematic": "SocdSyncRepeatForPair(key, other, winnerToken)" in src and "StartSoftwareRepeat(token)" in src,
+        "SOCD loser repeat stops": "StopSoftwareRepeat(token)" in src and "winnerToken" in src,
     }
     for label, present in required.items():
         (ok if present else fail)(label)
@@ -150,7 +155,7 @@ def main():
     test_log_sizes()
 
     print("============================================================")
-    print(" Tartarus AUDIT FIX1 self-test")
+    print(" Tartarus SOCD LAST-INPUT-WINS self-test")
     print("============================================================")
     for x in OK:
         print("[OK]  " + x)

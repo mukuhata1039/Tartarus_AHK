@@ -4,7 +4,7 @@ Persistent
 #Include Lib\AutoHotInterception.ahk
 
 ; ============================================================
-; Tartarus Pro replacement mapper - v10.1.5 AUDIT FIX1
+; Tartarus Pro replacement mapper - v10.1.7 SOCD LAST-INPUT-WINS FIX2
 ;
 ; v5:
 ; 1) Keeps v4 input behavior unchanged.
@@ -47,6 +47,15 @@ global OutputCounts := Map()
 global MouseOutputCounts := Map()
 global HyperTokens := Map()
 
+; SOCD / Last Input Wins for the standard movement cluster only:
+;   08=W, 12=A, 13=S, 14=D.
+; No Rapid Trigger is implemented here. The currently-latest opposing
+; direction wins; releasing it restores the older still-held direction.
+global SocdHeldTokens := Map()
+global SocdPressOrder := Map()
+global SocdOutputContrib := Map()
+global SocdSequence := 0
+
 global DpadGeneration := Map()
 global ThumbGeneration := Map()
 
@@ -66,7 +75,7 @@ global CurrentMapFile := A_ScriptDir "\\Tartarus_CurrentMap.txt"
 global VerboseLogFlag := A_ScriptDir "\\ENABLE_VERBOSE_LOGGING.txt"
 global VerboseLogging := FileExist(VerboseLogFlag)
 try FileDelete(DebugFile)
-Log("START v10.1.5 AUDIT FIX1  Kbd1=" Kbd1 " Kbd2=" Kbd2 " TartarusMouse=" TartarusMouse " OutputKeyboard=" OutputKeyboard " OutputMouse=" OutputMouse)
+Log("START v10.1.7 SOCD LIW FIX2  Kbd1=" Kbd1 " Kbd2=" Kbd2 " TartarusMouse=" TartarusMouse " OutputKeyboard=" OutputKeyboard " OutputMouse=" OutputMouse)
 
 LoadMappingsFromConfig()
 RestoreCurrentMapFromFile()
@@ -210,6 +219,7 @@ PollAnalogState() {
 
 TransferPressedToken(oldToken, newToken, phys) {
     global Pressed, ActiveActions, RepeatTimers, HyperTokens
+    global SocdHeldTokens, SocdPressOrder
 
     if (oldToken = newToken || !Pressed.Has(oldToken))
         return
@@ -229,6 +239,18 @@ TransferPressedToken(oldToken, newToken, phys) {
     if HyperTokens.Has(oldToken) {
         HyperTokens.Delete(oldToken)
         HyperTokens[newToken] := true
+    }
+
+    ; Preserve SOCD ownership if the analog daemon takes over while a
+    ; movement key is physically held. The logical output contribution does
+    ; not change here; only the token identity changes.
+    if SocdHeldTokens.Has(oldToken) {
+        SocdHeldTokens[newToken] := SocdHeldTokens[oldToken]
+        SocdHeldTokens.Delete(oldToken)
+        if SocdPressOrder.Has(oldToken) {
+            SocdPressOrder[newToken] := SocdPressOrder[oldToken]
+            SocdPressOrder.Delete(oldToken)
+        }
     }
 
     if hadRepeat
@@ -477,6 +499,12 @@ HandlePhysical(token, phys, state) {
             return
 
         if (SubStr(action, 1, 2) = "K|") {
+            socdKey := SocdMovementKey(phys, action)
+            if (socdKey != "") {
+                SocdDirectionDown(token, socdKey)
+                return
+            }
+
             HoldKeyboardAction(action)
             StartSoftwareRepeat(token)
             return
@@ -515,6 +543,11 @@ HandlePhysical(token, phys, state) {
     }
 
     if (SubStr(action, 1, 2) = "K|") {
+        ; If this token entered through the SOCD path, its output state is
+        ; owned by the pair reconciler rather than by ReleaseKeyboardAction.
+        if SocdDirectionUp(token)
+            return
+
         StopSoftwareRepeat(token)
         ReleaseKeyboardAction(action)
         return
@@ -543,6 +576,170 @@ SetHyperToken(token, isDown) {
     Log("HYPER " . (HyperShift ? "ON" : "OFF"))
     SendLedState(CurrentMap)
     UpdateTray()
+}
+
+; ------------------------------------------------------------
+; SOCD / Last Input Wins (WASD movement cluster only)
+; ------------------------------------------------------------
+
+SocdMovementKey(phys, action) {
+    ; Deliberately limit SOCD to the physical WASD cluster. This prevents a
+    ; plain "A", "D", "W" or "S" assigned elsewhere (for an editor command,
+    ; text entry, etc.) from unexpectedly participating in movement cleaning.
+    static Expected := Map(
+        "08", "w",
+        "12", "a",
+        "13", "s",
+        "14", "d"
+    )
+
+    if !Expected.Has(phys)
+        return ""
+    if (SubStr(action, 1, 2) != "K|")
+        return ""
+
+    body := SubStr(action, 3)
+    ; Shortcuts such as Ctrl+A are never SOCD inputs.
+    if InStr(body, "+")
+        return ""
+
+    key := StrLower(body)
+    return (key = Expected[phys]) ? key : ""
+}
+
+SocdDirectionDown(token, key) {
+    global SocdHeldTokens, SocdPressOrder, SocdSequence
+
+    ; HandlePhysical already filters repeated RAW DOWN events, but keep this
+    ; guard here as a second line of defence.
+    if SocdHeldTokens.Has(token)
+        return
+
+    SocdSequence += 1
+    SocdHeldTokens[token] := key
+    SocdPressOrder[token] := SocdSequence
+    Log("SOCD DOWN " key " token=" token " order=" SocdSequence)
+    SocdReconcilePair(key)
+}
+
+SocdDirectionUp(token) {
+    global SocdHeldTokens, SocdPressOrder
+
+    if !SocdHeldTokens.Has(token)
+        return false
+
+    ; A SOCD direction uses the normal software typematic while it is the
+    ; active winner. Always stop this token's timer before removing it so a
+    ; released/losing direction can never keep emitting repeat DOWN events.
+    StopSoftwareRepeat(token)
+
+    key := SocdHeldTokens[token]
+    SocdHeldTokens.Delete(token)
+    if SocdPressOrder.Has(token)
+        SocdPressOrder.Delete(token)
+
+    Log("SOCD UP " key " token=" token)
+    SocdReconcilePair(key)
+    return true
+}
+
+SocdOtherKey(key) {
+    if (key = "a")
+        return "d"
+    if (key = "d")
+        return "a"
+    if (key = "w")
+        return "s"
+    if (key = "s")
+        return "w"
+    return ""
+}
+
+SocdReconcilePair(key) {
+    global SocdHeldTokens, SocdPressOrder
+
+    other := SocdOtherKey(key)
+    if (other = "")
+        return
+
+    ; Find the newest physically-held input in this opposing pair. That key
+    ; is the winner. Count all held tokens for the winner so OutputCounts stays
+    ; correct even if a mapping is duplicated in the future.
+    countKey := 0
+    countOther := 0
+    winner := ""
+    winnerToken := ""
+    winnerOrder := -1
+
+    for token, heldKey in SocdHeldTokens {
+        if (heldKey != key && heldKey != other)
+            continue
+
+        if (heldKey = key)
+            countKey += 1
+        else
+            countOther += 1
+
+        ord := SocdPressOrder.Has(token) ? SocdPressOrder[token] : 0
+        if (ord > winnerOrder) {
+            winnerOrder := ord
+            winner := heldKey
+            winnerToken := token
+        }
+    }
+
+    desiredKey := (winner = key) ? countKey : 0
+    desiredOther := (winner = other) ? countOther : 0
+
+    SocdSetContribution(key, desiredKey)
+    SocdSetContribution(other, desiredOther)
+
+    ; Preserve the mapper's original long-press behaviour. Only the current
+    ; last-input-wins direction may typematic-repeat. The suppressed opposite
+    ; direction must have its repeat timer stopped. If the winner is released,
+    ; the older still-held direction becomes active again and gets a fresh
+    ; normal repeat delay, exactly like a newly-active held key.
+    SocdSyncRepeatForPair(key, other, winnerToken)
+
+    if (winner != "")
+        Log("SOCD WINNER " winner " (" key "=" countKey ", " other "=" countOther ")")
+    else
+        Log("SOCD WINNER none (" key "/" other ")")
+}
+
+SocdSyncRepeatForPair(key, other, winnerToken) {
+    global SocdHeldTokens
+
+    for token, heldKey in SocdHeldTokens {
+        if (heldKey != key && heldKey != other)
+            continue
+
+        if (token = winnerToken)
+            StartSoftwareRepeat(token)
+        else
+            StopSoftwareRepeat(token)
+    }
+}
+
+SocdSetContribution(key, desired) {
+    global SocdOutputContrib
+
+    current := SocdOutputContrib.Has(key) ? SocdOutputContrib[key] : 0
+
+    while (current < desired) {
+        OutputKeyDown(key)
+        current += 1
+    }
+
+    while (current > desired) {
+        OutputKeyUp(key)
+        current -= 1
+    }
+
+    if (current > 0)
+        SocdOutputContrib[key] := current
+    else if SocdOutputContrib.Has(key)
+        SocdOutputContrib.Delete(key)
 }
 
 ; ------------------------------------------------------------
@@ -1345,7 +1542,7 @@ UpdateTray() {
     global CurrentMap, HyperShift, OutputKeyboard, MapOrder
 
     hs := HyperShift ? " [HS]" : ""
-    A_IconTip := "Tartarus AHK v10.1.5 AUDIT1 - " . CurrentMap . hs . " / OUT KBD " . OutputKeyboard
+    A_IconTip := "Tartarus AHK v10.1.7 SOCD FIX2 - " . CurrentMap . hs . " / OUT KBD " . OutputKeyboard
 
     ; Rebuild only our own compact tray menu.
     A_TrayMenu.Delete()
@@ -1431,6 +1628,7 @@ Log(msg) {
 
 Cleanup(*) {
     global OutputCounts, MouseOutputCounts, AHI, OutputKeyboard, OutputMouse, RepeatTimers
+    global SocdHeldTokens, SocdPressOrder, SocdOutputContrib
 
     ; LED daemon lifetime is owned exclusively by Tartarus_Runtime.ps1.
     ; Writing __EXIT__ here used to race with a newly started daemon during a
@@ -1457,6 +1655,10 @@ Cleanup(*) {
             }
         }
     }
+
+    SocdHeldTokens.Clear()
+    SocdPressOrder.Clear()
+    SocdOutputContrib.Clear()
 
     CloseAnalogMapping()
     try AHI.SetState(false)
