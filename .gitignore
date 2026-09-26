@@ -1,0 +1,11 @@
+# Tartarus local/runtime files
+__pycache__/
+*.pyc
+*.pyo
+Logs/
+*.log
+*.pcap
+*.pcapng
+Tartarus_CurrentMap.txt
+Tartarus_LED_State.txt
+STARTUP_ERROR.txt

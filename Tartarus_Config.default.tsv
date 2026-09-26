@@ -1,0 +1,209 @@
+# Tartarus Pro mapping config v10.1.4 dual-color + layer indicator
+# @map<TAB>name<TAB>top-red<TAB>top-green<TAB>top-blue<TAB>bottom-red<TAB>bottom-green<TAB>bottom-blue
+# @indicator<TAB>name<TAB>layer(N/H)<TAB>red(0/1)<TAB>green(0/1)<TAB>blue(0/1)
+# map<TAB>layer<TAB>physical<TAB>action
+@map	Keymap 1	255	0	0	255	0	0
+@map	Controller	0	255	0	0	255	0
+@map	clip_studio	0	0	255	0	0	255
+@map	aseprite	180	0	255	180	0	255
+@map	blender	0	220	255	0	220	255
+@indicator	Keymap 1	N	0	0	0
+@indicator	Keymap 1	H	0	0	0
+@indicator	Controller	N	0	0	0
+@indicator	Controller	H	0	0	0
+@indicator	clip_studio	N	0	0	0
+@indicator	clip_studio	H	0	0	0
+@indicator	aseprite	N	0	0	0
+@indicator	aseprite	H	0	0	0
+@indicator	blender	N	0	0	0
+@indicator	blender	H	0	0	0
+Keymap 1	N	ALTBTN	MAP|clip_studio
+Keymap 1	N	DUp	K|Home
+Keymap 1	N	DRight	K|d
+Keymap 1	N	DLeft	K|LControl+LAlt+c
+Keymap 1	N	DDown	K|End
+Keymap 1	N	01	K|LControl+LShift+t
+Keymap 1	N	02	K|LShift+LControl+LAlt+Tab
+Keymap 1	N	03	K|LControl+LAlt+Tab
+Keymap 1	N	04	K|Backspace
+Keymap 1	N	05	K|Esc
+Keymap 1	N	06	K|LControl+w
+Keymap 1	N	07	K|LControl+LShift+Tab
+Keymap 1	N	08	K|LControl+Tab
+Keymap 1	N	09	K|NumpadEnter
+Keymap 1	N	10	K|LControl+t
+Keymap 1	N	11	K|LShift
+Keymap 1	N	12	K|F5
+Keymap 1	N	13	K|Up
+Keymap 1	N	17	K|Left
+Keymap 1	N	18	K|Down
+Keymap 1	N	19	K|Right
+Keymap 1	N	16	K|LControl
+Keymap 1	N	14	K|F2
+Keymap 1	N	15	K|Space
+Keymap 1	N	20	HYPER
+Keymap 1	H	20	HYPER
+Keymap 1	H	01	MAP|Controller
+Keymap 1	H	02	K|F11
+Keymap 1	H	03	K|f
+Keymap 1	H	04	K|LShift+Delete
+Keymap 1	H	05	K|Delete
+Keymap 1	H	10	K|LControl+LAlt+F11
+Keymap 1	H	15	K|LControl+v
+Keymap 1	H	14	K|LControl+c
+Keymap 1	H	13	K|LControl+x
+Keymap 1	H	12	K|LControl+a
+Keymap 1	H	11	K|Tab
+Keymap 1	H	16	K|LWin+1
+Keymap 1	H	ScrollUp	MEDIA|Volume_Up
+Keymap 1	H	ScrollDown	MEDIA|Volume_Down
+Keymap 1	H	06	MAP|aseprite
+Keymap 1	H	09	K|LShift+LControl+n
+Keymap 1	H	07	MAP|blender
+Keymap 1	H	08	K|LShift+LWin+s
+Controller	N	01	K|Esc
+Controller	N	02	DISABLE
+Controller	N	03	DISABLE
+Controller	N	04	K|3
+Controller	N	05	DISABLE
+Controller	N	08	K|w
+Controller	N	12	K|a
+Controller	N	13	K|s
+Controller	N	14	K|d
+Controller	N	ALTBTN	K|z
+Controller	N	DUp	K|5
+Controller	N	DRight	K|6
+Controller	N	DDown	K|8
+Controller	N	DLeft	K|7
+Controller	N	06	DISABLE
+Controller	N	07	K|q
+Controller	N	09	K|e
+Controller	N	10	K|r
+Controller	N	15	K|x
+Controller	N	11	K|LShift
+Controller	N	16	K|LControl
+Controller	N	17	K|v
+Controller	N	18	K|b
+Controller	N	19	K|c
+Controller	N	20	HYPER
+Controller	H	20	HYPER
+Controller	H	01	MAP|Keymap 1
+Controller	H	02	DISABLE
+Controller	H	03	DISABLE
+Controller	H	04	DISABLE
+Controller	H	05	DISABLE
+Controller	H	06	DISABLE
+Controller	H	07	DISABLE
+Controller	H	08	K|w
+Controller	H	09	K|g
+Controller	H	10	K|h
+Controller	H	11	K|Tab
+Controller	H	12	K|a
+Controller	H	13	K|s
+Controller	H	14	K|d
+Controller	H	15	K|l
+Controller	H	16	K|LAlt
+Controller	H	17	DISABLE
+Controller	H	18	DISABLE
+Controller	H	19	K|m
+Controller	H	ALTBTN	DISABLE
+Controller	N	ScrollUp	K|F1
+Controller	N	ScrollDown	K|9
+clip_studio	N	05	K|LControl+LAlt+1
+clip_studio	N	10	K|f
+clip_studio	N	15	K|Space
+clip_studio	N	04	K|Enter
+clip_studio	N	09	MOUSE|RButton
+clip_studio	N	14	K|r
+clip_studio	N	03	K|LControl+LAlt+Tab
+clip_studio	N	08	K|LShift+LWin+s
+clip_studio	N	13	K|LControl+z
+clip_studio	N	02	K|LShift+LControl+LAlt+Tab
+clip_studio	N	07	K|LAlt+PrintScreen
+clip_studio	N	12	K|LShift+LControl+z
+clip_studio	N	01	K|Delete
+clip_studio	N	06	K|LAlt
+clip_studio	N	11	K|LShift
+clip_studio	N	16	K|LControl
+clip_studio	N	20	HYPER
+clip_studio	H	20	HYPER
+clip_studio	N	ALTBTN	MAP|Keymap 1
+clip_studio	H	05	K|LControl+v
+clip_studio	H	04	K|LControl+c
+clip_studio	H	03	K|t
+clip_studio	H	02	K|u
+clip_studio	H	01	DISABLE
+clip_studio	H	10	K|o
+clip_studio	H	09	K|j
+clip_studio	H	ScrollUp	K|p
+clip_studio	H	ScrollDown	K|z
+clip_studio	H	08	K|g
+clip_studio	H	07	K|b
+clip_studio	H	06	K|w
+clip_studio	H	15	K|2
+clip_studio	H	14	K|e
+clip_studio	H	13	K|v
+clip_studio	H	12	K|LShift+LControl+i
+clip_studio	H	11	K|LControl+s
+clip_studio	N	19	K|q
+clip_studio	N	18	K|1
+clip_studio	N	17	K|LControl+LAlt+9
+clip_studio	H	19	K|c
+clip_studio	H	18	K|x
+clip_studio	H	17	K|m
+clip_studio	H	16	K|LControl+d
+aseprite	N	05	K|LControl+LAlt+1
+aseprite	N	10	K|f
+aseprite	N	15	K|Space
+aseprite	N	04	K|Enter
+aseprite	N	09	MOUSE|RButton
+aseprite	N	14	K|r
+aseprite	N	03	K|LControl+LAlt+Tab
+aseprite	N	08	K|LShift+LWin+s
+aseprite	N	13	K|LControl+z
+aseprite	N	02	K|LShift+LControl+LAlt+Tab
+aseprite	N	07	K|LAlt+PrintScreen
+aseprite	N	12	K|LShift+LControl+z
+aseprite	N	01	K|Delete
+aseprite	N	06	K|LAlt
+aseprite	N	11	K|LShift
+aseprite	N	16	K|LControl
+aseprite	N	20	HYPER
+aseprite	H	20	HYPER
+aseprite	N	ALTBTN	MAP|Keymap 1
+aseprite	H	05	K|LControl+v
+aseprite	H	04	K|LControl+c
+aseprite	H	03	K|t
+aseprite	H	02	K|u
+aseprite	H	01	MAP|Keymap 1
+aseprite	H	10	K|7
+aseprite	H	09	K|j
+aseprite	H	ScrollUp	K|Up
+aseprite	H	ScrollDown	K|Down
+aseprite	H	08	K|g
+aseprite	H	07	K|b
+aseprite	H	06	K|w
+aseprite	H	15	K|2
+aseprite	H	14	K|e
+aseprite	H	13	K|v
+aseprite	H	12	K|LShift+LControl+i
+aseprite	H	11	K|LControl+s
+aseprite	N	19	K|q
+aseprite	N	18	K|1
+aseprite	N	17	K|k
+aseprite	H	19	K|LShift+x
+aseprite	H	18	K|x
+aseprite	H	17	K|m
+aseprite	H	16	K|LControl+d
+aseprite	N	DLeft	K|Left
+aseprite	N	DRight	K|Right
+aseprite	N	DUp	K|Up
+aseprite	N	DDown	K|Down
+aseprite	N	ScrollUp	K|Left
+aseprite	N	ScrollDown	K|Right
+blender	H	01	MAP|Keymap 1
+blender	N	20	HYPER
+blender	H	20	HYPER
+blender	N	15	K|Numpad0
+blender	N	18	K|NumpadDot
+blender	H	11	K|LControl+s
