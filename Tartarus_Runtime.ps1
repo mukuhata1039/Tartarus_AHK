@@ -239,6 +239,22 @@ function Start-MapperIfNeeded {
     return ((Get-TartarusAhkProcesses).Count -gt 0)
 }
 
+function Start-MapperWithRetry {
+    # Manual starts usually succeed on the first try. During Windows logon the
+    # Tartarus/output keyboard can enumerate a little later, so do not make a
+    # single failed launch permanent until the next reboot.
+    for ($attempt = 1; $attempt -le 6; $attempt++) {
+        if ((Get-TartarusAhkProcesses).Count -gt 0) { return $true }
+        Log "Mapper start attempt=$attempt"
+        $ok = Start-MapperIfNeeded
+        Start-Sleep -Milliseconds 900
+        if ((Get-TartarusAhkProcesses).Count -gt 0) { return $true }
+        Start-Sleep -Milliseconds 600
+    }
+    Log "ERROR mapper failed after retry window"
+    return $false
+}
+
 # Serialize start/restart/stop. Setup, the tray menu, and OPEN_SETTINGS can
 # otherwise launch overlapping runtime processes whose stop/start phases race.
 $runtimeMutex = New-Object System.Threading.Mutex($false, "Local\TartarusPortableRuntime")
@@ -273,8 +289,8 @@ try {
     # device/daemon restart without depending on a fragile launch race.
     $analogOk = Start-AnalogIfNeeded
     $ledOk = Start-LedIfNeeded
-    $ahkOk = Start-MapperIfNeeded
-    Log "START AUDIT_FIX1 action=$Action settings=$settingsOk analog=$analogOk led=$ledOk ahk=$ahkOk"
+    $ahkOk = Start-MapperWithRetry
+    Log "START STARTUP_FIX1 action=$Action settings=$settingsOk analog=$analogOk led=$ledOk ahk=$ahkOk"
 } finally {
     if ($runtimeLockTaken) {
         try { $runtimeMutex.ReleaseMutex() } catch {}

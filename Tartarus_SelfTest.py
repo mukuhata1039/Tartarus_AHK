@@ -140,6 +140,23 @@ def test_daemon_guards():
         (ok if present else fail)(label)
 
 
+
+def test_startup_guards():
+    setup = (ROOT / "SETUP_PORTABLE.ps1").read_text(encoding="utf-8-sig")
+    runtime = (ROOT / "Tartarus_Runtime.ps1").read_text(encoding="utf-8-sig")
+    auto_ps1 = ROOT / "Tartarus_Autostart.ps1"
+    auto_vbs = ROOT / "Tartarus_Autostart.vbs"
+    register_bat = ROOT / "REGISTER_AUTOSTART.bat"
+    checks = {
+        "delayed autostart launcher present": auto_ps1.exists() and auto_vbs.exists(),
+        "setup registers delayed launcher": "Tartarus_Autostart.vbs" in setup and "$AutostartVbs" in setup,
+        "runtime retries mapper during logon race": "Start-MapperWithRetry" in runtime,
+        "one-click autostart repair present": register_bat.exists(),
+    }
+    for label, present in checks.items():
+        (ok if present else fail)(label)
+
+
 def test_log_sizes():
     logdir = ROOT / "Logs"
     for path in logdir.glob("*"):
@@ -152,10 +169,11 @@ def main():
     test_config()
     test_ahk_guards()
     test_daemon_guards()
+    test_startup_guards()
     test_log_sizes()
 
     print("============================================================")
-    print(" Tartarus SOCD LAST-INPUT-WINS self-test")
+    print(" Tartarus SOCD + STARTUP self-test")
     print("============================================================")
     for x in OK:
         print("[OK]  " + x)

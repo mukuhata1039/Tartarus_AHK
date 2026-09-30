@@ -6,6 +6,7 @@ $Config = Join-Path $Root "Tartarus_Config.tsv"
 $DefaultConfig = Join-Path $Root "Tartarus_Config.default.tsv"
 $RuntimeVbs = Join-Path $Root "Tartarus_Runtime.vbs"
 $RuntimePs1 = Join-Path $Root "Tartarus_Runtime.ps1"
+$AutostartVbs = Join-Path $Root "Tartarus_Autostart.vbs"
 $Logs = Join-Path $Root "Logs"
 New-Item -ItemType Directory -Path $Logs -Force | Out-Null
 
@@ -134,8 +135,10 @@ if (Test-Path -LiteralPath $SelfTest) {
 }
 
 # 7) Autostart via HKCU Run registry. No Startup-folder file.
+# Use the delayed/retrying launcher instead of firing the runtime only once
+# during the fragile first seconds of logon.
 $RunKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
-$RunCommand = 'wscript.exe "' + $RuntimeVbs + '" start'
+$RunCommand = 'wscript.exe "' + $AutostartVbs + '"'
 if (-not (Test-Path -LiteralPath $RunKey)) {
     New-Item -Path $RunKey | Out-Null
 }
